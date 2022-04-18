@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using OpenTK.Mathematics;
 
@@ -84,6 +85,44 @@ namespace SharpCanvas
             );
 
             return new AxisAlignedBoundingBox(small, big);
+        }
+
+        public static List<T> SpiralizeArray<T>(T[,] matrix, int size)
+        {
+            var temp = new List<T>();
+            int x = 0; // current position; x
+            int y = 0; // current position; y
+            int d = 0; // current direction; 0=RIGHT, 1=DOWN, 2=LEFT, 3=UP
+            int c = 0; // counter
+            int s = 1; // chain size
+
+            // starting point
+            x = ((int)Math.Floor(size / 2.0)) - 1;
+            y = ((int)Math.Floor(size / 2.0)) - 1;
+
+            for (int k = 1; k <= (size - 1); k++)
+            {
+                for (int j = 0; j < (k < (size - 1) ? 2 : 3); j++)
+                {
+                    for (int i = 0; i < s; i++)
+                    {
+                        temp.Add(matrix[x, y]);
+                        c++;
+
+                        switch (d)
+                        {
+                            case 0: y = y + 1; break;
+                            case 1: x = x + 1; break;
+                            case 2: y = y - 1; break;
+                            case 3: x = x - 1; break;
+                        }
+                    }
+                    d = (d + 1) % 4;
+                }
+                s = s + 1;
+            }
+
+            return temp;
         }
     }
 }

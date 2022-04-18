@@ -30,7 +30,7 @@ namespace SharpCanvas
         public int MaxDepth { get; set; } = 50;
         public bool Aggregate { get; set; } = false;
 
-        private Stack<(int sl, int st, int el, int et)> _segmentations = new Stack<(int sl, int st, int el, int et)>();
+        private List<(int x, int y, int x1, int y1)> _segmentations = new List<(int x, int y, int x1, int y1)>();
 
         private Canvas _canvas;
         private Vector3[] _pixels;
@@ -70,17 +70,23 @@ namespace SharpCanvas
                 _pixels = new Vector3[Width * Height];
             }
 
+            var cols = Width / SegmentationSize;
+            var rows = Height / SegmentationSize;
+
+            var matrix = new (int x, int y, int x1, int y1)[cols, rows];
+
             // cut up the window on the x-axis
             for (int i = 0; i < Width; i += SegmentationSize)
             {
                 // cut up the window on the y-axis
                 for (int j = 0; j < Height; j += SegmentationSize)
                 {
-
                     // add the segmentations to the stack
-                    _segmentations.Push((i, j, i + SegmentationSize, j + SegmentationSize));
+                    matrix[i / SegmentationSize, j / SegmentationSize] = ((i, j, i + SegmentationSize, j + SegmentationSize));
                 }
             }
+
+            _segmentations = Helper.SpiralizeArray(matrix, cols);
 
             // we send the segmentations we made to stand on a queue
             // waiting to be rendered (bread queue)
@@ -107,15 +113,15 @@ namespace SharpCanvas
             // we go through each one
             for (int i = 0; i < length; i++)
             {
-                var segment = _segmentations.Pop();
+                var segment = _segmentations[i];
 
                 // set the status of the segment to working
                 _activeSegments[i] = true;
 
-                ThreadPool.QueueUserWorkItem<((int sl, int st, int el, int et) extents, int index)>((segment) =>
+                ThreadPool.QueueUserWorkItem<((int x, int y, int x1, int y1) extents, int index)>((segment) =>
                 {
                     // Draw working area
-                    _canvas.DrawRectangle(new Vector2i(segment.extents.sl, segment.extents.st), new Vector2i(SegmentationSize - 1, SegmentationSize - 1), Color4.Red);
+                    _canvas.DrawRectangle(new Vector2i(segment.extents.x, segment.extents.y), new Vector2i(SegmentationSize - 1, SegmentationSize - 1), Color4.Red);
 
                     // we render the segment
                     SampleSegment(segment.extents);
@@ -153,12 +159,12 @@ namespace SharpCanvas
             return false;
         }
 
-        private void SampleSegment((int sl, int st, int el, int et) segment)
+        private void SampleSegment((int x, int y, int x1, int y1) segment)
         {
             // we go through all pixels
-            for (int j = segment.et - 1; j >= segment.st; --j)
+            for (int j = segment.y1 - 1; j >= segment.y; --j)
             {
-                for (int i = segment.sl; i < segment.el; ++i)
+                for (int i = segment.x; i < segment.x1; ++i)
                 {
                     // these are going to have the values of 
                     // red green blue but multiplied by SamplesPerPixel

@@ -19,15 +19,23 @@ namespace SharpCanvas.Scenes
 
             Camera = new Camera(lookFrom, lookAt, up, 20, 1, apreture, distToFocus, 0, 1f);
 
-            var sun = new Emmisive(new ImageTexture("sunmap.jpg"), 1000f);
+            var sun = new Emmisive(new ImageTexture("sunmap.jpg"), 100f);
             Add("Sun", new Planet(Vector3.Zero, 1000f, sun));
 
             var earth = new Lambertian(new ImageTexture("earthmap.jpg"));
-            Add("Earth", new Planet(new Vector3(0, 0, 1500f), 300f, earth));
-            Get<Planet>("Sun").AngleAroundAxis += 1;
+            Add("Earth", new Planet(new Vector3(0, 0, 4000f), 700f, earth));
 
-            Get<Planet>("Earth").AngleAroundAxis += 1 * 12;
-            Get<Planet>("Earth").Angle += 1 * 300;
+            Get<Planet>("Sun").AngleAroundAxis = 1;
+            Get<Planet>("Earth").AngleAroundAxis = 12;
+            Get<Planet>("Earth").Angle = 300;
+
+            var rock = new Lambertian(new ImageTexture("rockmap.jpg"));
+
+            for (int i = 0; i < 20; i++)
+            {
+                Add($"Rock #{i}", new Planet(new Vector3(0, Helper.Random.Next(0, 500), Helper.Random.Next(1000, 6000)), Helper.Random.Next(10, 300), earth));
+                Get<Planet>($"Rock #{i}").Angle = Helper.Random.Next(0, 360);
+            }
         }
 
         public override void Update(float deltaTime)
