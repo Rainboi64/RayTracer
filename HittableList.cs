@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SharpCanvas
 {
-    public class HittableList : IList<IHittable>
+    public class HittableList : IList<IHittable>, IHittable
     {
 
         public bool BoundingBox(float time0, float time1, out AxisAlignedBoundingBox output)
@@ -100,6 +100,11 @@ namespace SharpCanvas
         IEnumerator IEnumerable.GetEnumerator()
         {
             return _hittables.GetEnumerator();
+        }
+
+        public bool HitBoundingBox(float time0, float time1, out AxisAlignedBoundingBox output)
+        {
+            return BoundingBox(time0, time1, out output);
         }
     }
 }

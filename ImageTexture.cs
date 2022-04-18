@@ -1,8 +1,7 @@
 using System;
-using System.Runtime.CompilerServices;
+using System.IO;
 using OpenTK.Mathematics;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
+using StbImageSharp;
 
 namespace SharpCanvas
 {
@@ -10,25 +9,26 @@ namespace SharpCanvas
     {
         public int Width { get; }
         public int Height { get; }
-        public Color4[,] Pixels;
+        public Color4[] Pixels;
 
         public ImageTexture() { }
         public ImageTexture(string path)
         {
-            var image = Image.Load<RgbaVector>(path);
-            Width = image.Width;
-            Height = image.Height;
-
-            Pixels = new Color4[Width, Height];
-
-            for (int y = 0; y < image.Height; y++)
+            using (var stream = File.OpenRead(path))
             {
-                Span<RgbaVector> row = image.GetPixelRowSpan(y);
+                ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlue);
+                Width = image.Width;
+                Height = image.Height;
 
-                for (int x = 0; x < row.Length; x++)
+                Pixels = new Color4[Width * Height];
+
+                for (int i = 0; i < Width * Height; ++i)
                 {
-                    ref RgbaVector pixel = ref row[x];
-                    Pixels[x, y] = Unsafe.As<RgbaVector, Color4>(ref pixel);
+                    float r = image.Data[i * 3 + 0] / 255f;
+                    float g = image.Data[i * 3 + 1] / 255f;
+                    float b = image.Data[i * 3 + 2] / 255f;
+
+                    Pixels[i] = new Color4(r, g, b, 1f);
                 }
             }
         }
@@ -37,15 +37,15 @@ namespace SharpCanvas
         {
             // Clamp input texture coordinates to [0,1] x [1,0]
             u = Math.Clamp(u, 0.0f, 1.0f);
-            v = 1.0f - Math.Clamp(v, 0.0f, 1.0f);  // Flip V to image coordinates
+            v = 1f - Math.Clamp(v, 0.0f, 1.0f);  // Flip V to image coordinates
 
-            var i = (int)(u * Width);
-            var j = (int)(v * Height);
+            var i = (int)((float)Width * u);
+            var j = (int)((float)Height * v);
 
             if (i >= Width) i = Width - 1;
             if (j >= Height) j = Height - 1;
 
-            return Pixels[i, j];
+            return Pixels[j * Height + i];
         }
 
     }

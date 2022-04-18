@@ -11,11 +11,11 @@ namespace SharpCanvas
         {
             var renderer = new Renderer(
                 _renderer.Canvas,
-                new CornellBox(),
+                new SolarSystem(),
                 Width,
                 Height,
                 64, // The Size of the blocks
-                200 // Number of samples 
+                1 // Number of samples 
                 );
 
             renderer.Aggregate = true;

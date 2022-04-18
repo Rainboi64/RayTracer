@@ -9,6 +9,7 @@
     <PackageReference Include="OpenTK" Version="4.6.3" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta13" />
+    <PackageReference Include="StbImageSharp" Version="2.27.8" />
   </ItemGroup>
 
 </Project>

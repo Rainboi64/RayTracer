@@ -59,8 +59,7 @@ namespace SharpCanvas
 
         private static void GetSphereUV(Vector3 p, out float u, out float v)
         {
-
-            var theta = MathF.Acos(Math.Clamp(-p.Y, 0f, 1f));
+            var theta = MathF.Acos(Math.Clamp(-p.Y, -1f, 1f));
             var phi = MathF.Atan2(-p.Z, p.X) + MathF.PI;
 
             u = phi / (2 * MathF.PI);
