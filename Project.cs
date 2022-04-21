@@ -11,7 +11,7 @@ namespace SharpCanvas
         {
             var renderer = new Renderer(
                 _renderer.Canvas,
-                new SolarSystem(),
+                new FakeTerrain(),
                 Width,
                 Height,
                 64, // The Size of the blocks

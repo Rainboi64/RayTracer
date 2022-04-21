@@ -20,6 +20,8 @@ namespace SharpCanvas
 {
     public class Renderer
     {
+        private const int MaxThreads = 4;
+
         public World World;
         public int Width { get; set; }
         public int Height { get; set; }
@@ -74,7 +76,7 @@ namespace SharpCanvas
             var rows = Height / SegmentationSize;
 
             var matrix = new (int x, int y, int x1, int y1)[cols, rows];
-
+            _segmentations = new List<(int x, int y, int x1, int y1)>();
             // cut up the window on the x-axis
             for (int i = 0; i < Width; i += SegmentationSize)
             {
@@ -82,6 +84,7 @@ namespace SharpCanvas
                 for (int j = 0; j < Height; j += SegmentationSize)
                 {
                     // add the segmentations to the stack
+                    // _segmentations.Add((i, j, i + SegmentationSize, j + SegmentationSize));
                     matrix[i / SegmentationSize, j / SegmentationSize] = ((i, j, i + SegmentationSize, j + SegmentationSize));
                 }
             }
@@ -113,6 +116,8 @@ namespace SharpCanvas
             // we go through each one
             for (int i = 0; i < length; i++)
             {
+                while (!ThreadsReady()) ;
+
                 var segment = _segmentations[i];
 
                 // set the status of the segment to working
@@ -145,6 +150,17 @@ namespace SharpCanvas
             Console.WriteLine($"Rendered {_samplesDone} samples after {(watch.ElapsedMilliseconds) / 1000f}s AVG: {(_timeSpent / (_samplesDone / SamplesPerPixel)) / 1000f}s TOT: {_timeSpent / 1000f}s APT: {(((_timeSpent / (_samplesDone / SamplesPerPixel)) / (double)(Width * Height)))}ms AST: {((((_timeSpent / (_samplesDone / SamplesPerPixel)) / (double)(Width * Height)))) / (double)SamplesPerPixel}ms.");
 
             _segmentsDone = 0;
+        }
+
+        private bool ThreadsReady()
+        {
+            int threadsWorking = 0;
+            foreach (var state in _activeSegments)
+            {
+                if (state == true)
+                    threadsWorking++;
+            }
+            return threadsWorking < MaxThreads;
         }
 
         private bool IsRendering()
@@ -228,11 +244,13 @@ namespace SharpCanvas
 
         private static Color4 SampleSky(Ray ray)
         {
+            return Color4.Black;
+
             // if a ray is going to the sky we just return a color
             // based on it's height
-            var unit_direction = ray.Direction.Normalized();
-            var t = (0.5f * (unit_direction.Y + 1.0f));
-            return new Color4((1f - t) + (t * 0.5f), (1f - t) + (t * 0.7f), (1f - t) + (t * 1f), 1f);
+            // var unit_direction = ray.Direction.Normalized();
+            // var t = (0.5f * (unit_direction.Y + 1.0f));
+            // return new Color4((1f - t) + (t * 0.5f), (1f - t) + (t * 0.7f), (1f - t) + (t * 1f), 1f);
         }
 
         private Color4 GenerateRayColor(Ray ray, Color4 background, in World world, int depth)
@@ -246,7 +264,7 @@ namespace SharpCanvas
             // send out a ray to the world from 0.0001 from here and to positive infinity
             // if the ray hits continue, otherwise draw sky
             if (!world.Hit(ray, 0.001f, float.PositiveInfinity, out var record))
-                return background;
+                return SampleSky(ray);
 
             Ray scattered = new Ray(Vector3.Zero, Vector3.Zero);
             Color4 attenuation = Color4.White;

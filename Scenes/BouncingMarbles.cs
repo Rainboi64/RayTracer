@@ -20,7 +20,7 @@ namespace SharpCanvas.Scenes
 
             Camera = new Camera(lookFrom, lookAt, up, 40, 1, apreture, distToFocus, 0, 1f);
 
-            var groundMaterial = new Lambertian(new NoiseTexture(4));
+            var groundMaterial = new Lambertian(new CheckerTexture(Color4.BurlyWood, Color4.Gray));
             //var groundMaterial = new Lambertian(new CheckerTexture(Color4.BurlyWood, Color4.White));
             Add("Ground", new Sphere(new Vector3(0f, -1000f, 0), 1000, groundMaterial));
 
@@ -61,13 +61,17 @@ namespace SharpCanvas.Scenes
                 }
             }
 
-            var material1 = new Dielectric(0f);
+
+            var material0 = new Emmisive(Color4.Red, 120f);
+            Add("Emmisive", new Sphere(new Vector3(-8f, 1f, 0f), 1f, material0));
+
+            var material1 = new Dielectric(1.333f);
             Add("Glass", new Sphere(new Vector3(0f, 1f, 0f), 1f, material1));
 
             var material2 = new Lambertian(new CheckerTexture(new RandomColorTexture(), Color4.Black));
             Add("Matte", new Sphere(new Vector3(-4f, 1f, 0f), 1.0f, material2));
 
-            var material3 = new Metal(new Color4(0.7f, 0.6f, 0.5f, 1f), 0.5f);
+            var material3 = new Metal(new Color4(0.7f, 0.6f, 0.5f, 1f), 0.1f);
             //var material3 = new Lambertian(new NoiseTexture());
             Add("Metal", new Sphere(new Vector3(4f, 1f, 0f), 1.0f, material3));
         }

@@ -28,6 +28,7 @@ namespace SharpCanvas
             Title = "Ray Tracer, Salah Al-Deen Jojah - Yaman Alhalabi";
 
             AspectRatio = 1f / 1f;
+            // Width = 768;
             Width = 512;
             Height = (int)(Width / AspectRatio);
 
